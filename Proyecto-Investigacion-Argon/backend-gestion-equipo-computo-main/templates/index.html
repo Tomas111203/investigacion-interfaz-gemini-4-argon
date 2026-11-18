@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Equipo de Cómputo - Laboratorio</title>
+    <style>
+        * { font-family: monospace; margin: 0; padding: 0; box-sizing: border-box; }
+        body { padding: 20px; background: #f5f5f5; }
+        h1 { margin-bottom: 10px; }
+        h2 { margin: 15px 0 8px 0; }
+        .section { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; }
+        label { display: inline-block; width: 180px; font-weight: bold; }
+        input, select, textarea { margin: 3px 0; padding: 4px 6px; border: 1px solid #999; font-family: monospace; }
+        input[type="text"], input[type="number"], input[type="date"], textarea { width: 300px; }
+        select { width: 310px; }
+        textarea { height: 50px; resize: vertical; }
+        button { padding: 6px 16px; margin: 5px 5px 5px 0; cursor: pointer; font-family: monospace; border: 1px solid #666; background: #e0e0e0; }
+        button:hover { background: #d0d0d0; }
+        button.danger { background: #f8d0d0; }
+        button.danger:hover { background: #f0b0b0; }
+        button.primary { background: #d0e8f8; }
+        button.primary:hover { background: #b0d8f0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th, td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; }
+        th { background: #e8e8e8; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr:hover { background: #eef5ff; }
+        .filters { margin-bottom: 10px; }
+        .filters label { width: auto; margin-right: 5px; }
+        .filters input, .filters select { width: 150px; margin-right: 15px; }
+        .stats-grid { display: flex; gap: 20px; flex-wrap: wrap; }
+        .stats-box { border: 1px solid #ccc; padding: 10px 15px; background: #fafafa; min-width: 200px; }
+        .stats-box h3 { margin-bottom: 5px; font-size: 14px; }
+        .msg { padding: 8px; margin: 5px 0; border: 1px solid; }
+        .msg.ok { background: #d4edda; border-color: #28a745; color: #155724; }
+        .msg.err { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .pagination { margin-top: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>🖥️ Gestión de Equipo de Cómputo - Laboratorio</h1>
+    <p>Interfaz de prueba para el CRUD del backend</p>
+    <div id="msg"></div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="section">
+        <h2>📊 Estadísticas</h2>
+        <button onclick="cargarStats()">Actualizar Estadísticas</button>
+        <div id="stats" class="stats-grid" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="section">
+        <h2 id="form-title">➕ Nuevo Equipo</h2>
+        <form id="equipo-form">
+            <input type="hidden" id="equipo-id">
+            <div><label>Núm. Inventario*:</label><input type="text" id="numero_inventario" required></div>
+            <div><label>Tipo de Equipo*:</label>
+                <select id="tipo_equipo">
+                    <option value="desktop">Desktop</option>
+                    <option value="laptop">Laptop</option>
+                    <option value="monitor">Monitor</option>
+                    <option value="impresora">Impresora</option>
+                    <option value="servidor">Servidor</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </div>
+            <div><label>Marca*:</label><input type="text" id="marca" required></div>
+            <div><label>Modelo*:</label><input type="text" id="modelo" required></div>
+            <div><label>Núm. Serie*:</label><input type="text" id="numero_serie" required></div>
+            <div><label>Procesador:</label><input type="text" id="procesador"></div>
+            <div><label>RAM (GB):</label><input type="number" id="ram_gb" min="1"></div>
+            <div><label>Almacenamiento:</label><input type="text" id="almacenamiento"></div>
+            <div><label>Sistema Operativo:</label><input type="text" id="sistema_operativo"></div>
+            <div><label>Estado*:</label>
+                <select id="estado">
+                    <option value="activo">Activo</option>
+                    <option value="en_reparacion">En Reparación</option>
+                    <option value="baja">Baja</option>
+                    <option value="almacen">Almacén</option>
+                </select>
+            </div>
+            <div><label>Laboratorio*:</label><input type="text" id="laboratorio" required></div>
+            <div><label>Ubicación:</label><input type="text" id="ubicacion"></div>
+            <div><label>Responsable:</label><input type="text" id="responsable"></div>
+            <div><label>Fecha Adquisición:</label><input type="date" id="fecha_adquisicion"></div>
+            <div><label>Última Revisión:</label><input type="date" id="fecha_ultima_revision"></div>
+            <div><label>Observaciones:</label><textarea id="observaciones"></textarea></div>
+            <div style="margin-top:10px;">
+                <button type="submit" class="primary" id="btn-submit">Crear Equipo</button>
+                <button type="button" onclick="limpiarForm()">Limpiar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- LISTADO -->
+    <div class="section">
+        <h2>📋 Listado de Equipos</h2>
+        <div class="filters">
+            <label>Buscar:</label><input type="text" id="f-busqueda" placeholder="Inventario, marca, serie...">
+            <label>Estado:</label>
+            <select id="f-estado">
+                <option value="">Todos</option>
+                <option value="activo">Activo</option>
+                <option value="en_reparacion">En Reparación</option>
+                <option value="baja">Baja</option>
+                <option value="almacen">Almacén</option>
+            </select>
+            <label>Tipo:</label>
+            <select id="f-tipo">
+                <option value="">Todos</option>
+                <option value="desktop">Desktop</option>
+                <option value="laptop">Laptop</option>
+                <option value="monitor">Monitor</option>
+                <option value="impresora">Impresora</option>
+                <option value="servidor">Servidor</option>
+                <option value="otro">Otro</option>
+            </select>
+            <button onclick="cargarEquipos()" class="primary">Buscar</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Inventario</th>
+                    <th>Tipo</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Núm. Serie</th>
+                    <th>Estado</th>
+                    <th>Laboratorio</th>
+                    <th>Responsable</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-equipos">
+                <tr><td colspan="9" style="text-align:center;">Cargando...</td></tr>
+            </tbody>
+        </table>
+        <div class="pagination" id="paginacion"></div>
+    </div>
+
+    <script>
+        const API = '/api/equipos';
+        let currentPage = 1;
+
+        // --- UTILIDADES ---
+        function showMsg(text, type) {
+            const el = document.getElementById('msg');
+            el.className = 'msg ' + type;
+            el.textContent = text;
+            setTimeout(() => el.textContent = '', 4000);
+        }
+
+        async function apiFetch(url, opts = {}) {
+            try {
+                const res = await fetch(url, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...opts
+                });
+                if (res.status === 204) return null;
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || `Error ${res.status}`);
+                return data;
+            } catch (e) {
+                showMsg(e.message, 'err');
+                throw e;
+            }
+        }
+
+        // --- ESTADÍSTICAS ---
+        async function cargarStats() {
+            const data = await apiFetch(API + '/stats');
+            if (!data) return;
+            let html = `<div class="stats-box"><h3>Total</h3><p>${data.total_equipos} equipos</p></div>`;
+            html += `<div class="stats-box"><h3>Por Estado</h3>`;
+            for (const [k, v] of Object.entries(data.por_estado)) html += `<p>${k}: ${v}</p>`;
+            html += `</div>`;
+            html += `<div class="stats-box"><h3>Por Tipo</h3>`;
+            for (const [k, v] of Object.entries(data.por_tipo)) html += `<p>${k}: ${v}</p>`;
+            html += `</div>`;
+            html += `<div class="stats-box"><h3>Por Laboratorio</h3>`;
+            for (const [k, v] of Object.entries(data.por_laboratorio)) html += `<p>${k}: ${v}</p>`;
+            html += `</div>`;
+            document.getElementById('stats').innerHTML = html;
+        }
+
+        // --- LISTAR ---
+        async function cargarEquipos(page = 1) {
+            currentPage = page;
+            let url = `${API}?page=${page}&page_size=20`;
+            const estado = document.getElementById('f-estado').value;
+            const tipo = document.getElementById('f-tipo').value;
+            const busqueda = document.getElementById('f-busqueda').value;
+            if (estado) url += `&estado=${estado}`;
+            if (tipo) url += `&tipo_equipo=${tipo}`;
+            if (busqueda) url += `&busqueda=${encodeURIComponent(busqueda)}`;
+
+            const data = await apiFetch(url);
+            if (!data) return;
+
+            const tbody = document.getElementById('tabla-equipos');
+            if (data.equipos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Sin resultados</td></tr>';
+            } else {
+                tbody.innerHTML = data.equipos.map(e => `
+                    <tr>
+                        <td>${e.numero_inventario}</td>
+                        <td>${e.tipo_equipo}</td>
+                        <td>${e.marca}</td>
+                        <td>${e.modelo}</td>
+                        <td>${e.numero_serie}</td>
+                        <td>${e.estado}</td>
+                        <td>${e.laboratorio}</td>
+                        <td>${e.responsable || '-'}</td>
+                        <td>
+                            <button onclick="editarEquipo('${e.id}')">✏️</button>
+                            <button class="danger" onclick="eliminarEquipo('${e.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Paginación
+            const totalPages = Math.ceil(data.total / data.page_size);
+            let pagHtml = `<strong>Página ${data.page} de ${totalPages}</strong> (${data.total} registros) `;
+            if (page > 1) pagHtml += `<button onclick="cargarEquipos(${page - 1})">◀ Anterior</button> `;
+            if (page < totalPages) pagHtml += `<button onclick="cargarEquipos(${page + 1})">Siguiente ▶</button>`;
+            document.getElementById('paginacion').innerHTML = pagHtml;
+        }
+
+        // --- CREAR / ACTUALIZAR ---
+        document.getElementById('equipo-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('equipo-id').value;
+            const body = {};
+            const fields = [
+                'numero_inventario', 'tipo_equipo', 'marca', 'modelo', 'numero_serie',
+                'procesador', 'ram_gb', 'almacenamiento', 'sistema_operativo', 'estado',
+                'laboratorio', 'ubicacion', 'responsable', 'fecha_adquisicion',
+                'fecha_ultima_revision', 'observaciones'
+            ];
+            fields.forEach(f => {
+                let val = document.getElementById(f).value;
+                if (f === 'ram_gb') val = val ? parseInt(val) : null;
+                else if (val === '') val = null;
+                if (id) { // update: solo enviar campos con valor
+                    if (val !== null) body[f] = val;
+                } else { // create: enviar todo
+                    body[f] = val;
+                }
+            });
+
+            if (id) {
+                await apiFetch(`${API}/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+                showMsg('Equipo actualizado correctamente', 'ok');
+            } else {
+                await apiFetch(API, { method: 'POST', body: JSON.stringify(body) });
+                showMsg('Equipo creado correctamente', 'ok');
+            }
+            limpiarForm();
+            cargarEquipos(currentPage);
+            cargarStats();
+        });
+
+        // --- EDITAR ---
+        async function editarEquipo(id) {
+            const e = await apiFetch(`${API}/${id}`);
+            if (!e) return;
+            document.getElementById('equipo-id').value = e.id;
+            document.getElementById('numero_inventario').value = e.numero_inventario;
+            document.getElementById('tipo_equipo').value = e.tipo_equipo;
+            document.getElementById('marca').value = e.marca;
+            document.getElementById('modelo').value = e.modelo;
+            document.getElementById('numero_serie').value = e.numero_serie;
+            document.getElementById('procesador').value = e.procesador || '';
+            document.getElementById('ram_gb').value = e.ram_gb || '';
+            document.getElementById('almacenamiento').value = e.almacenamiento || '';
+            document.getElementById('sistema_operativo').value = e.sistema_operativo || '';
+            document.getElementById('estado').value = e.estado;
+            document.getElementById('laboratorio').value = e.laboratorio;
+            document.getElementById('ubicacion').value = e.ubicacion || '';
+            document.getElementById('responsable').value = e.responsable || '';
+            document.getElementById('fecha_adquisicion').value = e.fecha_adquisicion || '';
+            document.getElementById('fecha_ultima_revision').value = e.fecha_ultima_revision || '';
+            document.getElementById('observaciones').value = e.observaciones || '';
+
+            document.getElementById('form-title').textContent = '✏️ Editar Equipo';
+            document.getElementById('btn-submit').textContent = 'Actualizar Equipo';
+            window.scrollTo(0, 0);
+        }
+
+        // --- ELIMINAR ---
+        async function eliminarEquipo(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este equipo?')) return;
+            await apiFetch(`${API}/${id}`, { method: 'DELETE' });
+            showMsg('Equipo eliminado correctamente', 'ok');
+            cargarEquipos(currentPage);
+            cargarStats();
+        }
+
+        // --- LIMPIAR ---
+        function limpiarForm() {
+            document.getElementById('equipo-form').reset();
+            document.getElementById('equipo-id').value = '';
+            document.getElementById('form-title').textContent = '➕ Nuevo Equipo';
+            document.getElementById('btn-submit').textContent = 'Crear Equipo';
+        }
+
+        // --- INICIALIZAR ---
+        cargarEquipos();
+        cargarStats();
+    </script>
+</body>
+</html>

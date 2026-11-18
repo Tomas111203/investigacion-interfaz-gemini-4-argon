@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Gestión de Inventario — Laboratorios de Cómputo</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Barra lateral de navegación -->
+    <aside class="sidebar" aria-label="Navegación principal">
+      <div class="sidebar-brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Inventario TI</span>
+          <span class="brand-subtitle">Laboratorios Universitarios</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-section-label">Menú Principal</p>
+        <a href="/estadisticas" data-link class="nav-item" id="nav-stats">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 20V10"></path>
+            <path d="M12 20V4"></path>
+            <path d="M6 20v-6"></path>
+          </svg>
+          <span>Estadísticas Generales</span>
+        </a>
+        <a href="/equipos" data-link class="nav-item" id="nav-list">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+          <span>Listado de Equipos</span>
+        </a>
+        <a href="/equipos/nuevo" data-link class="nav-item" id="nav-new">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>Registrar Equipo</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-status" id="api-status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-text">Conectado a /api/equipos</span>
+        </div>
+        <p class="footer-note">Control patrimonial y técnico de laboratorios de cómputo.</p>
+      </div>
+    </aside>
+
+    <!-- Área de contenido principal -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <nav class="breadcrumbs" id="breadcrumbs" aria-label="Ruta de navegación">
+            <a href="/estadisticas" data-link>Inicio</a>
+          </nav>
+          <h1 class="page-title" id="page-title">Estadísticas Generales</h1>
+        </div>
+        <div class="topbar-actions" id="topbar-actions">
+          <a href="/equipos/nuevo" data-link class="btn btn-primary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Nuevo Equipo
+          </a>
+        </div>
+      </header>
+
+      <main class="main-content" id="app-content" aria-live="polite">
+        <!-- El contenido dinámico de cada vista se inyecta aquí -->
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando aplicación...</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación para eliminar equipo -->
+  <div class="modal-backdrop hidden" id="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-danger-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div>
+          <h2 class="modal-title" id="delete-modal-title">Confirmar eliminación de equipo</h2>
+          <p class="modal-subtitle">Esta acción eliminará el registro de forma permanente de la base de datos.</p>
+        </div>
+      </div>
+      <div class="modal-body" id="delete-modal-body">
+        <!-- Detalles del equipo a eliminar -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-delete-btn">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirm-delete-btn">Eliminar definitivamente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor de notificaciones Toast -->
+  <div class="toast-container" id="toast-container" aria-live="assertive"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
