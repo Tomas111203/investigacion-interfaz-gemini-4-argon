@@ -3,7 +3,7 @@
  * Utiliza rutas relativas conforme al contrato OpenAPI 3.1.0.
  */
 const EquiposAPI = (() => {
-  const BASE_URL = '/api/equipos';
+  const BASE_URL = 'https://backend-gemini-4-argon.fly.dev/api/equipos';
 
   /**
    * Traduce errores de validación de FastAPI (422) o errores de negocio (404, 409)
