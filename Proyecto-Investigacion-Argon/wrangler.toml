@@ -1,0 +1,6 @@
+name = "investigacion-interfaz-gemini-4-argon" # Tu nombre de Worker
+compatibility_date = "2026-11-18" # Se recomienda usar la fecha actual
+
+[assets]
+directory = "./" # Si tu index.html está en el directorio raíz del repositorio
+not_found_handling = "single-page-application"
